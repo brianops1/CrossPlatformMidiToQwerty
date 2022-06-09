@@ -87,20 +87,20 @@ def find_velocity_key(velocity: Union[int, float]) -> str:
     # lintcheck: global-statement (W0603): Using the global statement
     global LAST_VEL
     idx = round(velocity/4)
-    
-    
+
+
     #these while checks are so the program won't hit a note
     #that is pressed just to change velocity
     #At least it should've but it doesn't work :(
-    
+
 ##    origin = idx * 4
-##    while velocity >= origin - 12: 
+##    while velocity >= origin - 12:
 ##        velocity -= 4
-##    
+##
 ##    while velocity <= origin + 12:
 ##        velocity += 4
 ##    idx = round(velocity/4)
-    
+
     if idx >= len(VELOCITY_MAP):
         return LAST_VEL
     LAST_VEL = VELOCITY_MAP[idx]
@@ -113,10 +113,10 @@ def simulate_key(key_type: str, note: int, velocity: Union[int, float]) -> None:
     if not -15 <= note-36 <= 88:
         return None
     index = note - 36
-    
+
     # C1 is note 36, C6 is note 96
     key = 0 if index >= len(LETTER_NOTE_MAP) else LETTER_NOTE_MAP[index]
-    
+
     if key_type == 'note_on':
         if SETTINGS['simulateVelocity']:
             velocitykey = find_velocity_key(velocity)
@@ -228,7 +228,7 @@ Which settings would you like to change?
             print('\nInvalid selection\n')
             sleep(0.5)
             continue
-        
+
         if selection == 0:
             clear()
             chang = False
@@ -244,20 +244,20 @@ Which settings would you like to change?
             SETTINGS['sustainCutoff'] = ask_int('\nEnter what offset you would like to use (0-127)')
         elif selection == 6:
             CUR_PORT = mido.open_input(select_port())
-        
-        save_settings()            
+
+        save_settings()
 
 def load_settings() -> None:
     "Load settings from file."
     if not os.path.exists(f'{SETTINGS_FILENAME}.txt'):
         save_settings()
         return
-    
+
     replace: Final = {
         'True': True,
         'False': False
     }
-    
+
     with open(f'{SETTINGS_FILENAME}.txt', 'r', encoding='utf-8') as file:
         toggle = 0
         change_item = 0
@@ -318,7 +318,7 @@ def run() -> None:
     "Initialize Main"
     # lintcheck: global-statement (W0603): Using the global statement
     global CUR_PORT, CLOSE_THREAD
-    
+
     try:
         load_settings()
         CUR_PORT = mido.open_input(select_port())
@@ -331,7 +331,7 @@ def run() -> None:
             selection = ask_int('Select Option')
             if 1 > selection > 3:
                 selection = None
-            
+
             if selection:
                 clear()
                 if selection == 1:
