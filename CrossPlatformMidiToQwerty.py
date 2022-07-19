@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # Midi To Qwerty - Type with a midi keyboard
 
-'Midi To Qwerty'
+"Midi To Qwerty"
 
 # Programmed by brianops1
 
@@ -15,9 +15,10 @@ __version__ = '0.0.0'
 #mido
 #pynput
 
-from typing import Optional, Union, Final
+from typing import Optional, Union, Final, Iterable
 
 import os
+import sys
 import re
 
 from threading import Thread
@@ -115,7 +116,7 @@ def simulate_key(key_type: str, note: int, velocity: Union[int, float]) -> None:
     index = note - 36
 
     # C1 is note 36, C6 is note 96
-    key = 0 if index >= len(LETTER_NOTE_MAP) else LETTER_NOTE_MAP[index]
+    key = '0' if index >= len(LETTER_NOTE_MAP) else LETTER_NOTE_MAP[index]
 
     if key_type == 'note_on':
         if SETTINGS['simulateVelocity']:
@@ -143,7 +144,6 @@ def simulate_key(key_type: str, note: int, velocity: Union[int, float]) -> None:
             else:
                 BOARD.press(key)
         elif SETTINGS['88Keys']:
-            key: str
             if note >= 20 and 20 <= note < 40:
                 key = LOW_NOTES[note - 21]
             else:
@@ -260,7 +260,7 @@ def load_settings() -> None:
 
     with open(f'{SETTINGS_FILENAME}.txt', 'r', encoding='utf-8') as file:
         toggle = 0
-        change_item = 0
+        change_item = ''
         for line in file.read().splitlines():
             toggle = (toggle + 1) % 2
             if toggle:
@@ -269,7 +269,7 @@ def load_settings() -> None:
                 try:
                     SETTINGS[change_item] = int(line)
                 except ValueError:
-                    SETTINGS[change_item] = replace.get(line, line)
+                    SETTINGS[change_item] = replace.get(line, default=line)
         file.close()
 
 ####
@@ -279,7 +279,7 @@ def save_settings() -> None:
     data = []
     for key, value in SETTINGS.items():
         data.append(key)
-        data.append(value)
+        data.append(str(value))
     with open(f'{SETTINGS_FILENAME}.txt', 'w', encoding='utf-8') as file:
         file.write(os.linesep.join(data))
         file.close()
@@ -295,7 +295,7 @@ def clear() -> None:
 
 # set up key detection #
 
-def detect_key() -> Optional:
+def detect_key() -> Optional[str]:
     "Detect a key"
     ret_key = None
 
@@ -329,32 +329,27 @@ def run() -> None:
             # lintcheck: line-too-long (C0301): Line too long (105/100)
             print('   ---Welcome to the menu---\n\n\n1. Run main program\n\n2. Settings Menu\n\n3. Exit')
             selection = ask_int('Select Option')
+            clear()
             if 1 > selection > 3:
-                selection = None
-
-            if selection:
-                clear()
-                if selection == 1:
-                    while CUR_PORT.poll():
-                        pass
-                    clear()
-                    Thread(target = main).start()
-                    sleep(0.5)
-                    input('Main code is now running\nhit enter to go back to the menu at any time')
-                    CLOSE_THREAD = True
-                elif selection == 2:
-                    clear()
-                    settings_menu()
-                else:
-                    running = False
-            else:
-                clear()
                 print('There seemed to be an issue')
+                continue
+
+            if selection == 1:
+                while CUR_PORT.poll():
+                    pass
+                Thread(target = main).start()
+                sleep(0.5)
+                input('Main code is now running\nhit enter to go back to the menu at any time')
+                CLOSE_THREAD = True
+            elif selection == 2:
+                settings_menu()
+            else:
+                running = False
 
     # lintcheck: broad-except (W0703): Catching too general exception Exception
     except Exception as ex:
         clear()
-        print(f'Error detected: {ex}', file=os.sys.stderr)
+        print(f'Error detected: {ex}', file=sys.stderr)
         input()
     input('\n\nHit enter now to close. ')
 
